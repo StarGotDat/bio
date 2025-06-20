@@ -1,165 +1,115 @@
-$(document).ready(function() {
-    var audio = $('#background-music')[0];
-    var video = $('#background-video')[0];
-    var isPlaying = false;
-
-    // Preload video metadata to reduce initial loading time
-    video.preload = 'metadata';
-
-    // Start playing the video and audio when the video is loaded
-    video.oncanplay = function() {
-        video.play();
-        audio.play();
-        isPlaying = true;
-    };
-
-    // Handle video loading errors
-    video.onerror = function() {
-        console.error('Error loading video');
-        // You can display a message to the user or retry loading the video
-    };
-
-    // Handle button click
-    $('#enter-button').click(function() {
-        $('#enter-site').fadeOut('slow', function() {
-            $('#content').fadeIn('slow', function() {
-                // Play both audio and video
-                audio.play();
-                video.play();
-            });
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        return false;
     });
 
-    // Handle tab visibility change
-    document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'visible') {
-            if (isPlaying) {
-                audio.play();
-                video.play();
-            }
-        } else {
-            if (!audio.paused) {
-                audio.pause();
-            }
-            if (!video.paused) {
-                video.pause();
-            }
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && (e.key === 'a' || e.key === 'c' || e.key === 'x' || e.key === 'v')) {
+            e.preventDefault();
+            return false;
+        }
+
+        if (e.key === 'F12' || 
+            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) ||
+            (e.ctrlKey && e.key === 'u')) {
+            e.preventDefault();
+            return false;
         }
     });
 
-    // Optional: Handle when audio ends to stop the video as well
-    audio.onended = function() {
-        video.pause();
-        isPlaying = false;
-    };
-
-    // Optional: Handle when video ends to stop the audio as well
-    video.onended = function() {
-        audio.pause();
-        isPlaying = false;
-    };
-});
-Chat
-
-New Conversation
-
-🤓 Explain a complex thing
-
-Explain Artificial Intelligence so that I can explain it to my six-year-old child.
-
-
-🧠 Get suggestions and create new ideas
-
-Please give me the best 10 travel ideas around the world
-
-
-💭 Translate, summarize, fix grammar and more…
-
-Translate "I love you" French
-
-
-GPT-4o Mini
-Hello, how can I help you today?
-GPT-4o Mini
-coin image
-10
-Upgrade
-
-
-
-
-$(document).ready(function() {
-    var audio = $('#background-music')[0];
-    var video = $('#background-video')[0];
-    var isPlaying = false;
-
-    // Preload video metadata to reduce initial loading time
-    video.preload = 'metadata';
-
-    // Start playing the video and audio when the video is loaded
-    video.oncanplay = function() {
-        video.play();
-        audio.play();
-        isPlaying = true;
-    };
-
-    // Handle video loading errors
-    video.onerror = function() {
-        console.error('Error loading video');
-        // You can display a message to the user or retry loading the video
-    };
-
-    // Handle button click
-    $('#enter-button').click(function() {
-        $('#enter-site').fadeOut('slow', function() {
-            $('#content').fadeIn('slow', function() {
-                // Play both audio and video
-                audio.play();
-                video.play();
-            });
-        });
+    document.addEventListener('selectstart', function(e) {
+        e.preventDefault();
+        return false;
     });
 
-    // Handle tab visibility change
+    document.addEventListener('dragstart', function(e) {
+        e.preventDefault();
+        return false;
+    });
+
+    if (window.top !== window.self) {
+        window.top.location = window.self.location;
+    }
+
+    const video = document.getElementById('video-bg');
+    const overlay = document.getElementById('overlay');
+    
+    video.setAttribute('playsinline', '');
+    
     document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'visible') {
-            if (isPlaying) {
-                audio.play();
-                video.play();
-            }
-        } else {
-            if (!audio.paused) {
-                audio.pause();
-            }
-            if (!video.paused) {
-                video.pause();
-            }
+        if (document.hidden) {
+            video.pause();
+        } else if (overlay.style.display === 'none') {
+            video.play();
         }
     });
+    
+    function keepPlaying() {
+        if (!video.paused && !document.hidden && overlay.style.display === 'none') {
+            video.play();
+        }
+        requestAnimationFrame(keepPlaying);
+    }
+    
+    requestAnimationFrame(keepPlaying);
+    
+    const volumeControl = document.createElement('div');
+    volumeControl.classList.add('volume-control');
+    volumeControl.style.display = 'none';
+    
+    const volumeIcon = document.createElement('div');
+    volumeIcon.classList.add('volume-icon');
+    volumeControl.appendChild(volumeIcon);
 
-    // Optional: Handle when audio ends to stop the video as well
-    audio.onended = function() {
-        video.pause();
-        isPlaying = false;
-    };
+    const volumeSlider = document.createElement('input');
+    volumeSlider.type = 'range';
+    volumeSlider.min = '0';
+    volumeSlider.max = '1';
+    volumeSlider.step = '0.01';
+    
+    const storedVolume = localStorage.getItem('videoVolume');
+    if (storedVolume !== null) {
+        video.volume = parseFloat(storedVolume);
+        volumeSlider.value = video.volume;
+    } else {
+        volumeSlider.value = video.volume;
+    }
+    volumeSlider.classList.add('volume-slider');
+    volumeControl.appendChild(volumeSlider);
 
-    // Optional: Handle when video ends to stop the audio as well
-    video.onended = function() {
-        audio.pause();
-        isPlaying = false;
-    };
-});
+    document.body.appendChild(volumeControl);
 
-Paste selection
+    document.addEventListener('click', function() {
+        if (video.muted) {
+            video.muted = false;
+            const storedVolume = localStorage.getItem('videoVolume');
+            if (storedVolume !== null) {
+                video.volume = parseFloat(storedVolume);
+                volumeSlider.value = video.volume;
+                console.log('Restored volume on unmute:', video.volume);
+            } else {
+                video.volume = 0.5;
+                volumeSlider.value = 0.5;
+                console.log('Set default volume on unmute:', video.volume);
+            }
+        }
+    }, { once: true });
 
+    volumeSlider.addEventListener('input', function() {
+        video.volume = volumeSlider.value;
+        localStorage.setItem('videoVolume', video.volume);
+        console.log('Saved volume to localStorage:', video.volume);
+    });
 
+    function enterSite() {
+        overlay.style.display = 'none';
+        video.play();
+        volumeControl.style.display = 'flex';
+        document.querySelector('.content').classList.add('visible');
+        
+        document.querySelector('.content').onclick = null;
+    }
 
-Powered by AITOPIA 
-Chat
-Ask
-Search
-Write
-Image
-ChatFile
-Vision
-Full Page
+    document.getElementById('overlay').onclick = enterSite;
+}); 
