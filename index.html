@@ -3,104 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>We 2 Rich Twin</title>
+    <title>2rich xyz</title>
     <style>
         body {
+            background: #000;
+            color: #fff;
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+            min-height: 100vh;
+            min-width: 100vw;
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #242424;
-            color: white;
-            text-align: center;
-            overflow-x: hidden;
+            overflow: hidden;
         }
-
-        .hero {
+        #galaxy-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+        }
+        .content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            height: 55vh; /* Reduced height even further */
-            padding: 0 20px;
-            margin-top: 20px; /* Added margin to move up */
-        }
-
-        .hero img {
-            width: 50%;
-            max-width: 400px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-        }
-
-        .hero h1 {
-            font-size: 3rem;
-            margin: 0.5em 0;
-        }
-
-        .hero p {
-            font-size: 1.25rem;
-            margin: 1em 0;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
             justify-content: center;
+            z-index: 1;
         }
-
-        .hero-buttons a {
-            padding: 10px 20px;
-            font-size: 1.1rem;
-            color: white;
-            text-decoration: none;
-            background: #6b6969;
-            border-radius: 5px;
-            transition: background 0.3s;
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 2.5rem;
+            letter-spacing: 2px;
+            font-weight: 700;
+            text-shadow: 0 4px 32px #000, 0 1px 0 #444;
         }
-
-        .hero-buttons a:hover {
-            background: #5c5c5c;
-        }
-
-        .embed-section {
+        .redirect-buttons {
             display: flex;
-            justify-content: center;
-            gap: 20px;
-            padding: 20px 20px; /* Adjusted padding */
+            gap: 2.5rem;
         }
-
-        .embed-section iframe {
-            width: 48%; /* Make iframe responsive */
-            height: 400px; /* Adjusted height */
-            max-width: 800px;
+        .redirect-buttons a {
+            padding: 1.2rem 3rem;
+            font-size: 1.3rem;
+            color: #fff;
+            background: linear-gradient(135deg, #232526 0%, #414345 100%);
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+            font-weight: 600;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
         }
-
-        .footer-text {
-            margin-top: 20px;
-            font-size: 1.5rem;
+        .redirect-buttons a::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(120deg, rgba(0,255,255,0.15), rgba(255,0,255,0.10));
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 0;
+        }
+        .redirect-buttons a:hover {
+            background: linear-gradient(135deg, #444 0%, #232526 100%);
+            transform: translateY(-4px) scale(1.07);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+        }
+        .redirect-buttons a:hover::before {
+            opacity: 1;
         }
     </style>
 </head>
 <body>
-    <div class="hero">
-    <img src="gif.gif" alt="GIF">
-    <h1>2rich.xyz</h1>
-    <p>Shittiest Bio Wesbite</p>
-    <div class="hero-buttons">
-        <a href="https://discord.gg/2rich" target="_blank">2rich discord</a>
-        <a href="https://badgirlsbible.com/eiffel-tower-sex-position" target="_blank">W Position</a>
-        <a href="https://files.catbox.moe/w4088s.gif" target="_blank">Type Shi</a>
+    <canvas id="galaxy-bg"></canvas>
+    <div class="content">
+        <h1>calm luh bio site</h1>
+        <div class="redirect-buttons">
+            <a href="https://2rich.xyz/star/" target="_blank">@Star</a>
+            <a href="https://2rich.xyz/viper/" target="_blank">@Viper</a>
         </div>
     </div>
-    <div class="embed-section">
-        <iframe src="https://www.youtube.com/embed/JhnKPXGys0s" title="GEEKEEDD" allowfullscreen></iframe>
-        <iframe src="https://www.youtube.com/embed/E60tiKlIrSQ" title="BEAT MY DICK" allowfullscreen></iframe>
-    </div>
+    <script>
+        const canvas = document.getElementById('galaxy-bg');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        const STAR_COUNT = 220;
+        const PARTICLE_COUNT = 70;
+        let stars = [];
+        let particles = [];
 
-    <div class="footer-text">
-        Made with a lot of love and care by star2rich for niggas with austim.
-    </div>
+        function createStars() {
+            stars = Array.from({length: STAR_COUNT}, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                baseSize: 0.7 + Math.random() * 1.5,
+                twinkle: Math.random() * Math.PI * 2,
+                speedX: (Math.random() - 0.5) * 0.03,
+                speedY: (Math.random() - 0.5) * 0.03,
+                color: `hsla(${200 + Math.random()*100}, 100%, 85%, 1)`
+            }));
+        }
+        function createParticles() {
+            particles = Array.from({length: PARTICLE_COUNT}, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                size: 30 + Math.random() * 60,
+                color: `hsla(${260 + Math.random()*80}, 80%, 60%, 0.07)`,
+                speedX: (Math.random() - 0.5) * 0.06,
+                speedY: (Math.random() - 0.5) * 0.06,
+                drift: Math.random() * Math.PI * 2
+            }));
+        }
+        function resize() {
+            w = window.innerWidth;
+            h = window.innerHeight;
+            canvas.width = w;
+            canvas.height = h;
+            createStars();
+            createParticles();
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function animate() {
+            ctx.clearRect(0, 0, w, h);
+            for (const p of particles) {
+                const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+                grad.addColorStop(0, p.color);
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, 2 * Math.PI);
+                ctx.fillStyle = grad;
+                ctx.fill();
+                p.x += p.speedX + Math.sin(p.drift) * 0.05;
+                p.y += p.speedY + Math.cos(p.drift) * 0.05;
+                p.drift += 0.002;
+                if (p.x < -p.size) p.x = w + p.size;
+                if (p.x > w + p.size) p.x = -p.size;
+                if (p.y < -p.size) p.y = h + p.size;
+                if (p.y > h + p.size) p.y = -p.size;
+            }
+            for (const s of stars) {
+                const twinkle = Math.abs(Math.sin(s.twinkle + performance.now() * 0.002)) * 0.7 + 0.5;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.baseSize * twinkle, 0, 2 * Math.PI);
+                ctx.fillStyle = s.color;
+                ctx.shadowColor = s.color;
+                ctx.shadowBlur = 8 * twinkle;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                s.x += s.speedX;
+                s.y += s.speedY;
+                s.twinkle += 0.01;
+                if (s.x < 0) s.x = w;
+                if (s.x > w) s.x = 0;
+                if (s.y < 0) s.y = h;
+                if (s.y > h) s.y = 0;
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+    <script>
+        document.addEventListener('keydown', function(e) {
+            if (
+                e.key === 'F12' ||
+                (e.ctrlKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J' || e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) ||
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j'))
+            ) {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && (e.key === 'a' || e.key === 'c' || e.key === 'x' || e.key === 'v')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        document.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+    </script>
 </body>
 </html>
