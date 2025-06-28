@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (e.key === 'F12' || 
-            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) ||
+            (e.ctrlKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J' || e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) ||
             (e.ctrlKey && e.key === 'u')) {
             e.preventDefault();
             return false;
