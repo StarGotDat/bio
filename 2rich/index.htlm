@@ -1,1 +1,39 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>star2rich</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="index.css">  
+</head>
+<body>
+    </div>
+    <div id="enter-site">
+        <button id="enter-button">Click to enter</button>
+    </div>
+    <div id="content" style="display:none;">
+        <audio id="background-music" loop>
+            <source src="https://files.catbox.moe/fc2yy2.mp3" type="audio/mpeg">
+        </audio>
+        <video id="background-video" loop muted>
+            <source src="https://files.catbox.moe/o8ezm8.mp4" type="video/mp4">
+        </video>
+        <div id="video-overlay"></div>
+        <div id="bio-link">
+            <div id="user-profile">
+                <img src="https://files.catbox.moe/vhm3hp.gif">
+                <h2>2r1ch</h2>
+                <p>Top 10 Discordians OAT</p>
+                <div id="buttons">
+                <a href="https://discord.gg/2rich">2rich</a>
+                <a href="https://discord.gg/richot">rich rust</a>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
