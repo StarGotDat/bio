@@ -1,15 +1,16 @@
-# Heartbeat Callback System
+# bio API
 
 A robust callback system for monitoring heartbeat status with automatic lockdown capabilities when heartbeat is lost.
 
 ## Features
 
-- **Heartbeat Monitoring**: Tracks system heartbeat status
-- **Automatic Lockdown**: Triggers lockdown mode when heartbeat is lost
-- **Callback System**: Notifies registered URLs when status changes
-- **RESTful API**: Complete API for managing callbacks and status
-- **Logging**: Comprehensive logging with Winston
-- **Security**: Helmet.js security headers and CORS support
+* **Heartbeat Monitoring**: Tracks system heartbeat status
+* **Automatic Lockdown**: Triggers lockdown mode when heartbeat is lost
+* **Callback System**: Notifies registered URLs when status changes
+* **RESTful API**: Complete API for managing callbacks and status
+* **Logging**: Comprehensive logging with Winston
+* **Security**: Helmet.js security headers and CORS support
+* **Ping Endpoint**: Basic ping POST request for testing connectivity
 
 ## Installation
 
@@ -40,6 +41,19 @@ npm run dev
 GET /health
 ```
 Returns server health status.
+
+### Ping Endpoint
+```
+POST /ping
+Content-Type: application/json
+
+{
+  "message": "ping",
+  "timestamp": "2024-01-01T12:00:00.000Z",
+  "data": { "key": "value" }
+}
+```
+Returns a pong response with received data and server information.
 
 ### Heartbeat Status
 ```
@@ -145,18 +159,28 @@ The system sends POST requests to registered callbacks with the following event 
 
 ### Environment Variables
 
-- `PORT`: Server port (default: 3000)
-- `NODE_ENV`: Environment (development/production)
-- `HEARTBEAT_THRESHOLD`: Milliseconds before lockdown (default: 30000)
-- `HEARTBEAT_CHECK_INTERVAL`: Check interval in milliseconds (default: 5000)
-- `LOG_LEVEL`: Logging level (default: info)
-- `CORS_ORIGIN`: CORS origin (default: *)
+* `PORT`: Server port (default: 3000)
+* `NODE_ENV`: Environment (development/production)
+* `HEARTBEAT_THRESHOLD`: Milliseconds before lockdown (default: 30000)
+* `HEARTBEAT_CHECK_INTERVAL`: Check interval in milliseconds (default: 5000)
+* `LOG_LEVEL`: Logging level (default: info)
+* `CORS_ORIGIN`: CORS origin (default: *)
 
 ## Usage Examples
 
-### 1. Register a Callback
+### 1. Test Ping Endpoint
 ```bash
-curl -X POST http://localhost:3000/api/heartbeat/callbacks \
+curl -X POST https://2rich.xyz/api/ping \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "test ping",
+    "data": { "test": true }
+  }'
+```
+
+### 2. Register a Callback
+```bash
+curl -X POST https://2rich.xyz/api/heartbeat/callbacks \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://your-website.com/webhook",
@@ -164,21 +188,21 @@ curl -X POST http://localhost:3000/api/heartbeat/callbacks \
   }'
 ```
 
-### 2. Check Status
+### 3. Check Status
 ```bash
-curl http://localhost:3000/api/heartbeat/status
+curl https://2rich.xyz/api/heartbeat/status
 ```
 
-### 3. Update Heartbeat
+### 4. Update Heartbeat
 ```bash
-curl -X POST http://localhost:3000/api/heartbeat/update \
+curl -X POST https://2rich.xyz/api/heartbeat/update \
   -H "Content-Type: application/json" \
   -d '{"status": "ok"}'
 ```
 
-### 4. Trigger Manual Lockdown
+### 5. Trigger Manual Lockdown
 ```bash
-curl -X POST http://localhost:3000/api/heartbeat/lockdown \
+curl -X POST https://2rich.xyz/api/heartbeat/lockdown \
   -H "Content-Type: application/json" \
   -d '{"reason": "emergency"}'
 ```
@@ -217,19 +241,20 @@ app.post('/webhook', (req, res) => {
 ## Monitoring
 
 The system automatically:
-- Monitors heartbeat every 5 seconds
-- Triggers lockdown if no heartbeat for 30 seconds
-- Releases lockdown when heartbeat is restored
-- Logs all events to `logs/combined.log`
-- Logs errors to `logs/error.log`
+
+* Monitors heartbeat every 5 seconds
+* Triggers lockdown if no heartbeat for 30 seconds
+* Releases lockdown when heartbeat is restored
+* Logs all events to `logs/combined.log`
+* Logs errors to `logs/error.log`
 
 ## Security Features
 
-- Helmet.js security headers
-- CORS protection
-- Input validation
-- Error handling
-- Graceful shutdown
+* Helmet.js security headers
+* CORS protection
+* Input validation
+* Error handling
+* Graceful shutdown
 
 ## License
 

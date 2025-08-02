@@ -1,333 +1,137 @@
 const express = require('express');
-const cors = require('cors');
 const helmet = require('helmet');
-const cron = require('node-cron');
-const axios = require('axios');
+const cors = require('cors');
 const winston = require('winston');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configure logging
+// Configure Winston logger
 const logger = winston.createLogger({
-  level: 'info',
+  level: process.env.LOG_LEVEL || 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
     winston.format.json()
   ),
+  defaultMeta: { service: 'bio-api' },
   transports: [
     new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
     new winston.transports.File({ filename: 'logs/combined.log' }),
-    new winston.transports.Console({
-      format: winston.format.simple()
-    })
-  ]
+  ],
 });
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple()
+  }));
+}
 
 // Middleware
 app.use(helmet());
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 
-// Heartbeat status management
-let heartbeatStatus = {
-  status: 'ok',
-  lastHeartbeat: new Date(),
-  callbacks: [],
-  isLockdown: false
-};
+// Request logging middleware
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.path}`, {
+    ip: req.ip,
+    userAgent: req.get('User-Agent'),
+    timestamp: new Date().toISOString()
+  });
+  next();
+});
 
-// Heartbeat callback system
-class HeartbeatCallbackSystem {
-  constructor() {
-    this.callbacks = [];
-    this.status = 'ok';
-    this.lastHeartbeat = new Date();
-    this.lockdownThreshold = 30000; // 30 seconds
-    this.heartbeatInterval = null;
-  }
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
 
-  // Register a callback URL
-  registerCallback(url, events = ['status_change', 'lockdown']) {
-    const callback = {
-      id: Date.now().toString(),
-      url,
-      events,
-      active: true,
-      createdAt: new Date()
-    };
+// Ping POST endpoint
+app.post('/ping', (req, res) => {
+  try {
+    const { message, timestamp, data } = req.body;
     
-    this.callbacks.push(callback);
-    logger.info(`Callback registered: ${url}`, { callbackId: callback.id });
-    return callback.id;
-  }
-
-  // Unregister a callback
-  unregisterCallback(callbackId) {
-    const index = this.callbacks.findIndex(cb => cb.id === callbackId);
-    if (index !== -1) {
-      const callback = this.callbacks.splice(index, 1)[0];
-      logger.info(`Callback unregistered: ${callback.url}`, { callbackId });
-      return true;
-    }
-    return false;
-  }
-
-  // Update heartbeat status
-  updateHeartbeat(status = 'ok') {
-    const previousStatus = this.status;
-    this.status = status;
-    this.lastHeartbeat = new Date();
-
-    logger.info(`Heartbeat updated: ${status}`, { 
-      previousStatus, 
-      newStatus: status,
-      timestamp: this.lastHeartbeat 
+    logger.info('Ping request received', {
+      message,
+      timestamp: timestamp || new Date().toISOString(),
+      data,
+      ip: req.ip
     });
 
-    // Check if status changed
-    if (previousStatus !== status) {
-      this.notifyCallbacks('status_change', {
-        previousStatus,
-        newStatus: status,
-        timestamp: this.lastHeartbeat
-      });
-    }
-
-    // Check for lockdown conditions
-    this.checkLockdown();
-  }
-
-  // Check if system should go into lockdown
-  checkLockdown() {
-    const timeSinceLastHeartbeat = Date.now() - this.lastHeartbeat.getTime();
-    
-    if (timeSinceLastHeartbeat > this.lockdownThreshold && !this.isLockdown) {
-      this.triggerLockdown();
-    } else if (timeSinceLastHeartbeat <= this.lockdownThreshold && this.isLockdown) {
-      this.releaseLockdown();
-    }
-  }
-
-  // Trigger lockdown mode
-  triggerLockdown() {
-    this.isLockdown = true;
-    logger.warn('LOCKDOWN TRIGGERED - No heartbeat received', {
-      timeSinceLastHeartbeat: Date.now() - this.lastHeartbeat.getTime(),
-      threshold: this.lockdownThreshold
-    });
-
-    this.notifyCallbacks('lockdown', {
-      reason: 'no_heartbeat',
-      lastHeartbeat: this.lastHeartbeat,
-      threshold: this.lockdownThreshold,
-      timestamp: new Date()
-    });
-  }
-
-  // Release lockdown mode
-  releaseLockdown() {
-    this.isLockdown = false;
-    logger.info('Lockdown released - Heartbeat restored', {
-      lastHeartbeat: this.lastHeartbeat
-    });
-
-    this.notifyCallbacks('lockdown_released', {
-      reason: 'heartbeat_restored',
-      lastHeartbeat: this.lastHeartbeat,
-      timestamp: new Date()
-    });
-  }
-
-  // Notify all registered callbacks
-  async notifyCallbacks(event, data) {
-    const relevantCallbacks = this.callbacks.filter(cb => 
-      cb.active && cb.events.includes(event)
-    );
-
-    logger.info(`Notifying ${relevantCallbacks.length} callbacks for event: ${event}`, { data });
-
-    const notifications = relevantCallbacks.map(async (callback) => {
-      try {
-        const response = await axios.post(callback.url, {
-          event,
-          data,
-          timestamp: new Date(),
-          callbackId: callback.id
-        }, {
-          timeout: 10000,
-          headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': 'Heartbeat-Callback-System/1.0'
-          }
-        });
-
-        logger.info(`Callback notification successful: ${callback.url}`, {
-          callbackId: callback.id,
-          statusCode: response.status
-        });
-
-        return { success: true, callbackId: callback.id, statusCode: response.status };
-      } catch (error) {
-        logger.error(`Callback notification failed: ${callback.url}`, {
-          callbackId: callback.id,
-          error: error.message
-        });
-
-        return { success: false, callbackId: callback.id, error: error.message };
+    res.status(200).json({
+      status: 'pong',
+      received: {
+        message: message || 'ping',
+        timestamp: timestamp || new Date().toISOString(),
+        data: data || null
+      },
+      response: {
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        server: 'bio-api'
       }
     });
-
-    const results = await Promise.allSettled(notifications);
-    return results.map(result => result.value || result.reason);
-  }
-
-  // Get current status
-  getStatus() {
-    return {
-      status: this.status,
-      isLockdown: this.isLockdown,
-      lastHeartbeat: this.lastHeartbeat,
-      timeSinceLastHeartbeat: Date.now() - this.lastHeartbeat.getTime(),
-      callbacks: this.callbacks.length,
-      threshold: this.lockdownThreshold
-    };
-  }
-
-  // Start heartbeat monitoring
-  startMonitoring() {
-    this.heartbeatInterval = setInterval(() => {
-      this.checkLockdown();
-    }, 5000); // Check every 5 seconds
-
-    logger.info('Heartbeat monitoring started');
-  }
-
-  // Stop heartbeat monitoring
-  stopMonitoring() {
-    if (this.heartbeatInterval) {
-      clearInterval(this.heartbeatInterval);
-      this.heartbeatInterval = null;
-      logger.info('Heartbeat monitoring stopped');
-    }
-  }
-}
-
-// Initialize the callback system
-const heartbeatSystem = new HeartbeatCallbackSystem();
-
-// API Routes
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date(),
-    uptime: process.uptime()
-  });
-});
-
-// Get current heartbeat status
-app.get('/api/heartbeat/status', (req, res) => {
-  res.json(heartbeatSystem.getStatus());
-});
-
-// Register a callback
-app.post('/api/heartbeat/callbacks', (req, res) => {
-  const { url, events } = req.body;
-  
-  if (!url) {
-    return res.status(400).json({ error: 'URL is required' });
-  }
-
-  try {
-    const callbackId = heartbeatSystem.registerCallback(url, events);
-    res.json({ 
-      success: true, 
-      callbackId,
-      message: 'Callback registered successfully' 
-    });
   } catch (error) {
-    logger.error('Failed to register callback', { error: error.message });
-    res.status(500).json({ error: 'Failed to register callback' });
+    logger.error('Error in ping endpoint', { error: error.message, stack: error.stack });
+    res.status(500).json({
+      status: 'error',
+      message: 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
-// Unregister a callback
-app.delete('/api/heartbeat/callbacks/:callbackId', (req, res) => {
-  const { callbackId } = req.params;
-  
-  const success = heartbeatSystem.unregisterCallback(callbackId);
-  
-  if (success) {
-    res.json({ success: true, message: 'Callback unregistered successfully' });
-  } else {
-    res.status(404).json({ error: 'Callback not found' });
-  }
-});
+// API routes
+app.use('/api/heartbeat', require('./routes/heartbeat'));
 
-// List all callbacks
-app.get('/api/heartbeat/callbacks', (req, res) => {
-  res.json({
-    callbacks: heartbeatSystem.callbacks,
-    total: heartbeatSystem.callbacks.length
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    status: 'error',
+    message: 'Endpoint not found',
+    path: req.originalUrl,
+    timestamp: new Date().toISOString()
   });
 });
 
-// Update heartbeat (simulate heartbeat from external system)
-app.post('/api/heartbeat/update', (req, res) => {
-  const { status = 'ok' } = req.body;
-  
-  heartbeatSystem.updateHeartbeat(status);
-  
-  res.json({
-    success: true,
-    message: 'Heartbeat updated',
-    status: heartbeatSystem.getStatus()
+// Error handler
+app.use((error, req, res, next) => {
+  logger.error('Unhandled error', { error: error.message, stack: error.stack });
+  res.status(500).json({
+    status: 'error',
+    message: 'Internal server error',
+    timestamp: new Date().toISOString()
   });
 });
 
-// Manual lockdown trigger
-app.post('/api/heartbeat/lockdown', (req, res) => {
-  const { reason = 'manual' } = req.body;
-  
-  heartbeatSystem.triggerLockdown();
-  
-  res.json({
-    success: true,
-    message: 'Lockdown triggered manually',
-    reason,
-    status: heartbeatSystem.getStatus()
-  });
-});
-
-// Release lockdown
-app.post('/api/heartbeat/release', (req, res) => {
-  heartbeatSystem.releaseLockdown();
-  
-  res.json({
-    success: true,
-    message: 'Lockdown released',
-    status: heartbeatSystem.getStatus()
-  });
-});
-
-// Start the server
+// Start server
 app.listen(PORT, () => {
-  logger.info(`Heartbeat callback system running on port ${PORT}`);
-  heartbeatSystem.startMonitoring();
+  logger.info(`Server running on port ${PORT}`, {
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down gracefully');
-  heartbeatSystem.stopMonitoring();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   logger.info('SIGINT received, shutting down gracefully');
-  heartbeatSystem.stopMonitoring();
   process.exit(0);
 });
 
-module.exports = { app, heartbeatSystem }; 
+module.exports = app; 
