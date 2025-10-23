@@ -115,13 +115,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.views !== undefined) {
                 // Format number with commas
-                viewCountElement.textContent = data.views.toLocaleString() + ' views';
+                viewCountElement.textContent = data.views.toLocaleString();
             } else {
-                viewCountElement.textContent = '0 views';
+                viewCountElement.textContent = '0';
             }
         } catch (error) {
             console.error('Failed to fetch view count:', error);
-            document.getElementById('view-count').textContent = '--- views';
+            document.getElementById('view-count').textContent = '---';
         }
     }
     
