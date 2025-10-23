@@ -104,4 +104,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     document.getElementById('overlay').onclick = enterSite;
+
+    const WORKER_URL = 'https://2rich.xyz/api/views';
+    
+    async function fetchViewCount() {
+        try {
+            const response = await fetch(WORKER_URL);
+            const data = await response.json();
+            const viewCountElement = document.getElementById('view-count');
+            
+            if (data.views !== undefined) {
+                // Format number with commas
+                viewCountElement.textContent = data.views.toLocaleString() + ' views';
+            } else {
+                viewCountElement.textContent = '0 views';
+            }
+        } catch (error) {
+            console.error('Failed to fetch view count:', error);
+            document.getElementById('view-count').textContent = '--- views';
+        }
+    }
+    
+    fetchViewCount();
 }); 
