@@ -114,7 +114,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const viewCountElement = document.getElementById('view-count');
             
             if (data.views !== undefined) {
-                // Format number with commas
                 viewCountElement.textContent = data.views.toLocaleString();
             } else {
                 viewCountElement.textContent = '0';
@@ -124,6 +123,5 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('view-count').textContent = '---';
         }
     }
-    
     fetchViewCount();
 }); 
