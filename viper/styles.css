@@ -379,21 +379,20 @@ p {
 }
 
 .view-counter {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(89, 0, 255, 0.3);
+    position: absolute;
+    top: 15px;
+    left: 15px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
+    gap: 6px;
     color: #b7aaff;
-    font-size: 0.95rem;
-    opacity: 0.85;
+    font-size: 0.9rem;
+    opacity: 0.75;
 }
 
 .view-counter i {
     color: #5900ff;
-    font-size: 1rem;
+    font-size: 0.95rem;
 }
 
 .view-counter span {
