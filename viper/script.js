@@ -37,16 +37,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     video.setAttribute('playsinline', '');
     
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden) {
-            video.pause();
-        } else if (overlay.style.display === 'none') {
-            video.play();
-        }
-    });
-    
     function keepPlaying() {
-        if (!video.paused && !document.hidden && overlay.style.display === 'none') {
+        if (!video.paused && overlay.style.display === 'none') {
             video.play();
         }
         requestAnimationFrame(keepPlaying);
