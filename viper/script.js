@@ -119,19 +119,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 1200);
             }
         }).catch(function(err) {
-            console.error('Failed to copy Discord username:', err);
+            console.error('failed to copy username:', err);
         });
     }
 
     document.getElementById('overlay').onclick = enterSite;
 
-    const WORKER_URL = 'https://2rich.xyz/api/views';
+    const view_api = 'https://2rich.xyz/api/views';
     
     async function fetchViewCount() {
         const viewCountElement = document.getElementById('view-count');
         
         try {
-            const response = await fetch(WORKER_URL, {
+            const response = await fetch(view_api, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`error status: ${response.status}`);
             }
             
             const data = await response.json();
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 viewCountElement.setAttribute('aria-label', 'View count: 0');
             }
         } catch (error) {
-            console.error('Failed to fetch view count:', error);
+            console.error('failed to fetch views:', error);
             viewCountElement.textContent = 'Error';
             viewCountElement.setAttribute('aria-label', 'View count unavailable');
         }
