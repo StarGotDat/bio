@@ -14,59 +14,40 @@
     </div>
 
     <div class="background">
-        <video loop muted id="video-bg" playsinline disablepictureinpicture>
+        <video loop muted id="video-bg" playsinline disablepictureinpicture preload="metadata">
             <source src="https://files.catbox.moe/x4ywv2.mp4" type="video/mp4">
-            Your browser does not support the video.
+            Your browser does not support the video tag.
         </video>
     </div>
 
     <div class="profile-card">
-        <div class="view-counter">
-            <i class="fas fa-eye"></i>
-            <span id="view-count">---</span>
+        <div class="view-counter" aria-live="polite" aria-atomic="true">
+            <i class="fas fa-eye" aria-hidden="true"></i>
+            <span id="view-count" aria-label="View count">Loading...</span>
         </div>
-        <img src="https://cdn.discordapp.com/avatars/1279608424060944455/16c6e4022f6eceaa5cd2686815b1af82.png?size=1024" alt="Profile Picture" class="profile-pic">
+        <img src="https://cdn.discordapp.com/avatars/1279608424060944455/16c6e4022f6eceaa5cd2686815b1af82.png?size=1024" alt="vrailn's profile picture" class="profile-pic">
          <h1 class="name-tag">vrailn</h1>
         <div class="bio">
             <p>c++ dev</p>
             <p>17 year old dev who mainly works with game hacking and dabbles in kernel development</p>
         </div>
         <div class="social-buttons-container">
-            <a class="social-btn" aria-label="Discord" onclick="copyDiscord()">
-                <i class="fab fa-discord"></i>
-                <span id="discord-copied" class="tooltip-arrowbox">copied</span>
+            <a class="social-btn" aria-label="Visit GitHub profile" role="button" tabindex="0" onclick="openLink('https://github.com/vrailn')" onkeydown="if(event.key==='Enter'||event.key===' '){openLink('https://github.com/vrailn');event.preventDefault();}">
+                <i class="fab fa-github" aria-hidden="true"></i>
+            </a>
+            <a class="social-btn" aria-label="Visit YouTube channel" role="button" tabindex="0" onclick="openLink('https://www.youtube.com/@BaseNetworkable')" onkeydown="if(event.key==='Enter'||event.key===' '){openLink('https://www.youtube.com/@BaseNetworkable');event.preventDefault();}">
+                <i class="fab fa-youtube" aria-hidden="true"></i>
+            </a>
+            <a class="social-btn" aria-label="Visit TikTok profile" role="button" tabindex="0" onclick="openLink('https://www.tiktok.com/@vrailn')" onkeydown="if(event.key==='Enter'||event.key===' '){openLink('https://www.tiktok.com/@vrailn');event.preventDefault();}">
+                <i class="fab fa-tiktok" aria-hidden="true"></i>
+            </a>
+            <a class="social-btn" aria-label="Copy Discord username: vrailn" role="button" tabindex="0" onclick="copyDiscord()" onkeydown="if(event.key==='Enter'||event.key===' '){copyDiscord();event.preventDefault();}">
+                <i class="fab fa-discord" aria-hidden="true"></i>
+                <span id="discord-copied" class="tooltip-arrowbox" role="status" aria-live="polite">copied</span>
             </a>
         </div>
     </div>
 
-    <script>
-        function enterSite() {
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('video-bg').play();
-        }
-
-        function copyDiscord() {
-            navigator.clipboard.writeText('vrailn').then(function() {
-                var copied = document.getElementById('discord-copied');
-                copied.classList.add('show');
-                setTimeout(function() {
-                    copied.classList.remove('show');
-                }, 1200);
-            });
-        }
-
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12' || 
-                (e.ctrlKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J' || e.key === 'u' || e.key === 'U'))) {
-                e.preventDefault();
-            }
-        });
-    </script>
     <script src="script.js"></script>
 </body>
 </html> 
- 
