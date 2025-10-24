@@ -94,13 +94,33 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Saved volume to localStorage:', video.volume);
     });
 
-    function enterSite() {
+    window.enterSite = function() {
         overlay.style.display = 'none';
         video.play();
         volumeControl.style.display = 'flex';
-        document.querySelector('.content').classList.add('visible');
-        
-        document.querySelector('.content').onclick = null;
+        const contentElement = document.querySelector('.content');
+        if (contentElement) {
+            contentElement.classList.add('visible');
+            contentElement.onclick = null;
+        }
+    }
+
+    window.openLink = function(url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    window.copyDiscord = function() {
+        navigator.clipboard.writeText('vrailn').then(function() {
+            const copied = document.getElementById('discord-copied');
+            if (copied) {
+                copied.classList.add('show');
+                setTimeout(function() {
+                    copied.classList.remove('show');
+                }, 1200);
+            }
+        }).catch(function(err) {
+            console.error('Failed to copy Discord username:', err);
+        });
     }
 
     document.getElementById('overlay').onclick = enterSite;
@@ -108,20 +128,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const WORKER_URL = 'https://2rich.xyz/api/views';
     
     async function fetchViewCount() {
+        const viewCountElement = document.getElementById('view-count');
+        
         try {
-            const response = await fetch(WORKER_URL);
+            const response = await fetch(WORKER_URL, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
-            const viewCountElement = document.getElementById('view-count');
             
             if (data.views !== undefined) {
                 viewCountElement.textContent = data.views.toLocaleString();
+                viewCountElement.setAttribute('aria-label', `View count: ${data.views.toLocaleString()}`);
             } else {
                 viewCountElement.textContent = '0';
+                viewCountElement.setAttribute('aria-label', 'View count: 0');
             }
         } catch (error) {
             console.error('Failed to fetch view count:', error);
-            document.getElementById('view-count').textContent = '---';
+            viewCountElement.textContent = 'Error';
+            viewCountElement.setAttribute('aria-label', 'View count unavailable');
         }
     }
+    
     fetchViewCount();
 }); 
