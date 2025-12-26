@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             return false;
         }
-
         if (e.key === 'F12' || 
             (e.ctrlKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J' || e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) ||
             (e.ctrlKey && e.key === 'u')) {
@@ -34,7 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const video = document.getElementById('video-bg');
     const overlay = document.getElementById('overlay');
-    
     video.setAttribute('playsinline', '');
     
     function keepPlaying() {
@@ -43,7 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         requestAnimationFrame(keepPlaying);
     }
-    
     requestAnimationFrame(keepPlaying);
     
     const volumeControl = document.createElement('div');
@@ -79,11 +76,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (storedVolume !== null) {
                 video.volume = parseFloat(storedVolume);
                 volumeSlider.value = video.volume;
-                console.log('Restored volume on unmute:', video.volume);
             } else {
                 video.volume = 0.5;
                 volumeSlider.value = 0.5;
-                console.log('Set default volume on unmute:', video.volume);
             }
         }
     }, { once: true });
@@ -91,7 +86,6 @@ document.addEventListener('DOMContentLoaded', function() {
     volumeSlider.addEventListener('input', function() {
         video.volume = volumeSlider.value;
         localStorage.setItem('videoVolume', video.volume);
-        console.log('Saved volume to localStorage:', video.volume);
     });
 
     window.enterSite = function() {
@@ -103,11 +97,11 @@ document.addEventListener('DOMContentLoaded', function() {
             contentElement.classList.add('visible');
             contentElement.onclick = null;
         }
-    }
+    };
 
     window.openLink = function(url) {
         window.open(url, '_blank', 'noopener,noreferrer');
-    }
+    };
 
     window.copyDiscord = function() {
         navigator.clipboard.writeText('vrailn').then(function() {
@@ -118,10 +112,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     copied.classList.remove('show');
                 }, 1200);
             }
-        }).catch(function(err) {
-            console.error('failed to copy username:', err);
         });
-    }
+    };
 
     document.getElementById('overlay').onclick = enterSite;
 
@@ -129,21 +121,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function fetchViewCount() {
         const viewCountElement = document.getElementById('view-count');
-        
         try {
-            const response = await fetch(view_api, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`error status: ${response.status}`);
-            }
-            
+            const response = await fetch(view_api, { method: 'GET', headers: { 'Content-Type': 'application/json' }});
+            if (!response.ok) throw new Error();
             const data = await response.json();
-            
             if (data.views !== undefined) {
                 viewCountElement.textContent = data.views.toLocaleString();
                 viewCountElement.setAttribute('aria-label', `View count: ${data.views.toLocaleString()}`);
@@ -151,13 +132,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 viewCountElement.textContent = '0';
                 viewCountElement.setAttribute('aria-label', 'View count: 0');
             }
-        } catch (error) {
-            console.error('failed to fetch views:', error);
+        } catch {
             viewCountElement.textContent = 'Error';
             viewCountElement.setAttribute('aria-label', 'View count unavailable');
         }
     }
     
     fetchViewCount();
-}); 
- 
+});
+
+(function(){
+    setInterval(function(){
+        if (window.outerWidth - window.innerWidth > 200 || window.outerHeight - window.innerHeight > 200) {
+            document.body.innerHTML = "";
+            alert("Developer tools disabled");
+            location.reload();
+        }
+    }, 500);
+
+    setInterval(function(){
+        debugger;
+    }, 250);
+
+    console.log = () => {};
+    console.warn = () => {};
+    console.error = () => {};
+    console.info = () => {};
+
+    document.addEventListener("keydown", (e) => {
+        if (
+            e.key === "F12" || e.keyCode === 123 ||
+            (e.ctrlKey && e.shiftKey && ["I","i","J","j","C","c"].includes(e.key)) ||
+            (e.ctrlKey && ["U","u","S","s"].includes(e.key))
+        ) {
+            e.preventDefault();
+            alert("Blocked");
+            return false;
+        }
+    });
+})();
