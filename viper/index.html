@@ -12,14 +12,12 @@
     <div id="overlay" onclick="enterSite()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); color: white; display: flex; justify-content: center; align-items: center; z-index: 1000;">
         <p style="font-size: 20px;">click to enter</p>
     </div>
-
     <div class="background">
         <video loop muted id="video-bg" playsinline disablepictureinpicture preload="metadata">
             <source src="https://files.catbox.moe/hnmc47.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
     </div>
-
     <div class="profile-card">
         <div class="view-counter" aria-live="polite" aria-atomic="true">
             <i class="fas fa-eye" aria-hidden="true"></i>
@@ -44,9 +42,11 @@
                 <i class="fab fa-discord" aria-hidden="true"></i>
                 <span id="discord-copied" class="tooltip-arrowbox" role="status" aria-live="polite">copied</span>
             </a>
+            <a class="social-btn" aria-label="Visit Hytale Decryptor" role="button" tabindex="0" onclick="openLink('https://2rich.xyz/hytale-decryptor/')" onkeydown="if(event.key==='Enter'||event.key===' '){openLink('https://2rich.xyz/hytale-decryptor/');event.preventDefault();}">
+                <i class="fas fa-gamepad" aria-hidden="true"></i>
+            </a>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
-</html> 
+</html>
