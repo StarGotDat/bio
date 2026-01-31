@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>hytale world code decription</title>
+
   <link rel="icon" type="image/x-icon" href="webicon.ico">
+
   <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
 
   <style>
@@ -118,7 +120,16 @@
     <pre id="output"></pre>
   </div>
 
+  <audio id="bg-audio" src="https://files.catbox.moe/jcnne5.mp3" autoplay loop></audio>
+
   <script>
+    const audio = document.getElementById("bg-audio");
+    audio.volume = 0.15;
+
+    document.addEventListener("click", () => {
+      audio.play();
+    }, { once: true });
+
     function decode() {
       const output = document.getElementById("output");
       output.textContent = "";
@@ -152,7 +163,3 @@
 
 </body>
 </html>
-
-
-
-
