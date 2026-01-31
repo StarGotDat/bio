@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Encoded Data Decoder</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #eaeaea;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      background: #111;
+      padding: 28px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      border-radius: 0;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0 0 18px;
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: #ccc;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      background: #1b1b1b;
+      color: #8affc1;
+      border: 1px solid #333;
+      padding: 14px;
+      font-family: monospace;
+      font-size: 13px;
+      outline: none;
+      border-radius: 0;
+      resize: none; /* disabled resizing */
+    }
+
+    textarea:focus {
+      border-color: #4caf8c;
+    }
+
+    button {
+      margin-top: 16px;
+      padding: 10px 20px;
+      background: #4caf8c;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      color: #000;
+      cursor: pointer;
+      transition: transform 0.05s ease, box-shadow 0.05s ease;
+      border-radius: 0;
+    }
+
+    button:hover {
+      box-shadow: 0 6px 16px rgba(76, 175, 140, 0.4);
+      transform: translateY(-1px);
+    }
+
+    pre {
+      margin-top: 20px;
+      padding: 18px;
+      background: #0b0b0b;
+      border: 1px solid #2a2a2a;
+      max-height: 320px;
+      overflow: auto;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-radius: 0;
+    }
+
+    .error {
+      color: #ff6b6b;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Ehytale server decryption</h1>
+    <p>Paste the server data</p>
+
+    <label for="input">Encoded input</label>
+    <textarea id="input" placeholder="paste the world code here."></textarea>
+
+    <button onclick="decode()">Decode</button>
+
+    <pre id="output"></pre>
+  </div>
+
+  <script>
+    function decode() {
+      const output = document.getElementById("output");
+      output.textContent = "";
+      output.classList.remove("error");
+
+      try {
+        const input = document.getElementById("input").value.trim();
+        if (!input) throw new Error("No input provided");
+
+        const binary = atob(input);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+
+        const inflated = pako.inflate(bytes, { raw: true });
+        const text = new TextDecoder("utf-8").decode(inflated);
+
+        try {
+          output.textContent = JSON.stringify(JSON.parse(text), null, 2);
+        } catch {
+          output.textContent = text;
+        }
+
+      } catch (err) {
+        output.textContent = "Error: " + err.message;
+        output.classList.add("error");
+      }
+    }
+  </script>
+
+</body>
+</html>
